@@ -10,13 +10,13 @@ import time
 import threading
 import logging
 import os
-import pickle  # Добавлено для сохранения состояния
+import pickle  # для сохранения состояния
 from datetime import datetime, timedelta
 from collections import deque
 import warnings
 warnings.filterwarnings('ignore')
 
-# Импорты для Windows мониторинга
+# Импорты для мониторинга
 import psutil
 import socket
 import platform
@@ -49,7 +49,7 @@ logger = logging.getLogger("AISecurity")
 # ============================================
 
 class StandardScaler:
-    """Упрощенный StandardScaler с возможностью сохранения"""
+    # Упрощенное нормальное распределение с возможностью сохранения
 
     def __init__(self):
         self.mean_ = None
@@ -71,21 +71,21 @@ class StandardScaler:
         return self.transform(X)
 
     def get_state(self):
-        """Получить состояние scaler для сохранения"""
+        # Получить состояние scaler для сохранения
         return {
             'mean': self.mean_.tolist() if self.mean_ is not None else None,
             'scale': self.scale_.tolist() if self.scale_ is not None else None
         }
 
     def set_state(self, state):
-        """Восстановить состояние scaler из сохраненных данных"""
+        # Восстановить состояние scaler из сохраненных данных
         if state['mean'] is not None:
             self.mean_ = np.array(state['mean'])
         if state['scale'] is not None:
             self.scale_ = np.array(state['scale'])
 
 class IncidentLogger:
-    """Логирование инцидентов в JSON файл"""
+    # Логирование инцидентов в JSON файл
     
     def __init__(self, filename='ais_incidents.json'):
         self.filename = filename
@@ -93,7 +93,7 @@ class IncidentLogger:
         self.load_existing_incidents()
         
     def load_existing_incidents(self):
-        """Загрузка существующих инцидентов из файла"""
+        # Загрузка существующих инцидентов из файла
         try:
             if os.path.exists(self.filename):
                 with open(self.filename, 'r', encoding='utf-8') as f:
@@ -106,7 +106,7 @@ class IncidentLogger:
             self.incidents = []
             
     def log_incident(self, incident_data):
-        """Логирование нового инцидента"""
+        # Логирование нового инцидента
         try:
             # Добавляем временную метку, если её нет
             if 'timestamp' not in incident_data:
@@ -129,7 +129,7 @@ class IncidentLogger:
             return False
             
     def _convert_for_json(self, obj):
-        """Конвертация объектов для JSON сериализации"""
+        # Конвертация объектов для JSON сериализации
         if isinstance(obj, dict):
             return {k: self._convert_for_json(v) for k, v in obj.items()}
         elif isinstance(obj, list):
@@ -148,7 +148,7 @@ class IncidentLogger:
             return obj
             
     def _save_to_file(self):
-        """Сохранение инцидентов в файл"""
+        # Сохранение инцидентов в файл
         try:
             # Ограничиваем количество инцидентов (последние 1000)
             if len(self.incidents) > 1000:
@@ -163,19 +163,19 @@ class IncidentLogger:
             return False
             
     def get_incidents(self, limit=None):
-        """Получение списка инцидентов"""
+        # Получение списка инцидентов
         if limit:
             return self.incidents[-limit:]
         return self.incidents.copy()
         
     def clear_incidents(self):
-        """Очистка всех инцидентов"""
+        # Очистка всех инцидентов
         self.incidents = []
         self._save_to_file()
         logger.info("Все инциденты очищены")
 
 class ArtificialImmuneSystem:
-    """Базовый класс искусственной иммунной системы с сохранением состояния"""
+    # Базовый класс искусственной иммунной системы
 
     def __init__(self, n_detectors=100, self_radius=0.1,
                  activation_threshold=0.7, memory_size=50):
@@ -298,7 +298,7 @@ class ArtificialImmuneSystem:
         self._log_incident(anomaly_data, anomaly_type)
 
     def _log_incident(self, anomaly_data, anomaly_type):
-        """Логирование инцидента в JSON файл"""
+        # Логирование инцидента в JSON файл
         try:
             incident = {
                 'timestamp': datetime.now(),
@@ -383,7 +383,7 @@ class ArtificialImmuneSystem:
         }
 
     def save_state(self, filename='ais_state.pkl'):
-        """Сохранение состояния системы"""
+        # Сохранение состояния системы
         try:
             # Подготовка данных для сохранения
             state = {
@@ -412,7 +412,7 @@ class ArtificialImmuneSystem:
             return False
 
     def load_state(self, filename='ais_state.pkl'):
-        """Загрузка состояния системы"""
+        # Загрузка состояния системы
         try:
             if not os.path.exists(filename):
                 logger.info(f"Файл состояния {filename} не найден, будет создана новая система")
@@ -445,7 +445,7 @@ class ArtificialImmuneSystem:
             return False
 
     def retrain(self, normal_data, n_samples=1000):
-        """Переобучение системы"""
+        # Переобучение системы
         logger.info("Начато переобучение системы")
 
         # Сохраняем историю для восстановления
@@ -473,11 +473,11 @@ class ArtificialImmuneSystem:
         return detectors_count
 
 # ============================================
-# КЛАССЫ МОНИТОРИНГА С СОХРАНЕНИЕМ BASELINE
+# КЛАССЫ МОНИТОРИНГА
 # ============================================
 
 class WindowsSystemMonitor:
-    """Мониторинг системных событий Windows с сохранением baseline"""
+    # Мониторинг системных событий Windows с сохранением baseline
 
     def __init__(self):
         self.system_info = self.get_system_info()
@@ -495,7 +495,7 @@ class WindowsSystemMonitor:
         }
 
     def collect_system_metrics(self):
-        """Сбор текущих метрик системы"""
+        # Сбор текущих метрик системы
         try:
             # Системные метрики
             cpu_percent = psutil.cpu_percent(interval=0.1)
@@ -584,7 +584,7 @@ class WindowsSystemMonitor:
             return {}
 
     def calculate_baseline(self, duration_sec=60):
-        """Расчет baseline метрик"""
+        # Расчет baseline метрик
         logger.info(f"Расчет baseline за {duration_sec} секунд...")
 
         metrics_list = []
@@ -615,15 +615,15 @@ class WindowsSystemMonitor:
         return False
 
     def get_baseline(self):
-        """Получение текущего baseline"""
+        # Получение текущего baseline
         return self.baseline_metrics.copy()
 
     def set_baseline(self, baseline):
-        """Установка baseline"""
+        # Установка baseline
         self.baseline_metrics = baseline.copy()
 
     def save_baseline(self, filename='baseline.json'):
-        """Сохранение baseline в файл"""
+        # Сохранение baseline в файл
         try:
             # Конвертация для JSON
             baseline_json = {}
@@ -641,7 +641,7 @@ class WindowsSystemMonitor:
             return False
 
     def load_baseline(self, filename='baseline.json'):
-        """Загрузка baseline из файла"""
+        # Загрузка baseline из файла
         try:
             if not os.path.exists(filename):
                 logger.info(f"Файл baseline {filename} не найден")
@@ -659,11 +659,11 @@ class WindowsSystemMonitor:
             return False
 
 # ============================================
-# ПОТОК МОНИТОРИНГА С УЧЕТОМ СОХРАНЕННОГО СОСТОЯНИЯ
+# ПОТОК МОНИТОРИНГА
 # ============================================
 
 class MonitoringThread(QThread):
-    """Поток для фонового мониторинга с сохранением состояния"""
+    # Поток для фонового мониторинга с сохранением состояния
 
     # Сигналы для обновления GUI
     metrics_updated = pyqtSignal(dict)  # Новые метрики
@@ -682,7 +682,7 @@ class MonitoringThread(QThread):
         self.need_training = not ais_system.trained  # Проверка необходимости обучения
 
     def run(self):
-        """Основной цикл мониторинга"""
+        # Основной цикл мониторинга
         self.running = True
         logger.info("Поток мониторинга запущен")
 
@@ -777,7 +777,7 @@ class MonitoringThread(QThread):
         logger.info("Поток мониторинга остановлен")
 
     def _training_phase(self):
-        """Фаза обучения с обновлением прогресса"""
+        # Фаза обучения с обновлением прогресса
         logger.info("Начало фазы обучения")
         training_data = []
         duration = self.config.get('training_duration', 300)  # 5 минут по умолчанию
@@ -813,23 +813,23 @@ class MonitoringThread(QThread):
             self.training_completed.emit()
 
     def retrain(self):
-        """Запуск переобучения"""
+        # Запуск переобучения
         logger.info("Запуск переобучения")
         self.need_training = True
         self._training_phase()
 
     def stop(self):
-        """Остановка потока"""
+        # Остановка потока
         self.running = False
         self.stop_event.set()
         self.wait(5000)  # Ожидаем до 5 секунд
 
 # ============================================
-# ГЛАВНОЕ ОКНО ПРОГРАММЫ С ПОЛНЫМ ЭКРАНОМ
+# ГЛАВНОЕ ОКНО ПРОГРАММЫ
 # ============================================
 
 class MainWindow(QMainWindow):
-    """Главное окно приложения с графическим интерфейсом"""
+    # Главное окно приложения с графическим интерфейсом
 
     def __init__(self):
         super().__init__()
@@ -855,17 +855,17 @@ class MainWindow(QMainWindow):
         self.showMaximized()
 
     def init_ui(self):
-        """Инициализация пользовательского интерфейса"""
+        # Инициализация пользовательского интерфейса
         self.setWindowTitle("Ais Windows")
 
-        # Устанавливаем минимальный размер
+        # Минимальный размер окна
         self.setMinimumSize(1000, 700)
 
         # Центральный виджет
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
 
-        # Основной layout
+        # Основной слой
         main_layout = QVBoxLayout(central_widget)
         main_layout.setContentsMargins(10, 10, 10, 10)
         main_layout.setSpacing(10)
@@ -898,7 +898,7 @@ class MainWindow(QMainWindow):
         self.apply_styles()
 
     def create_control_panel(self):
-        """Создание панели управления с кнопкой переобучения"""
+        # Создание панели управления
         panel = QWidget()
         layout = QHBoxLayout(panel)
         layout.setSpacing(10)
@@ -970,7 +970,7 @@ class MainWindow(QMainWindow):
         return panel
 
     def create_monitoring_panel(self):
-        """Создание панели мониторинга"""
+        # Создание панели мониторинга
         panel = QWidget()
         layout = QVBoxLayout(panel)
         layout.setSpacing(10)
@@ -1025,7 +1025,7 @@ class MainWindow(QMainWindow):
         return panel
 
     def create_details_panel(self):
-        """Создание панели деталей и логов"""
+        # Создание панели деталей и логов
         panel = QWidget()
         layout = QVBoxLayout(panel)
         layout.setSpacing(10)
@@ -1139,7 +1139,7 @@ class MainWindow(QMainWindow):
         return panel
 
     def apply_styles(self):
-        """Применение стилей к интерфейсу"""
+        # Применение стилей к интерфейсу
         self.setStyleSheet("""
             QMainWindow {
                 background-color: #f5f5f5;
@@ -1171,7 +1171,7 @@ class MainWindow(QMainWindow):
                 margin-top: 10px;
                 padding-top: 15px;
                 background-color: white;
-                color: black;  /* ДОБАВЛЕНО: явно задаем черный цвет текста */
+                color: black;
             }
             QGroupBox::title {
                 subcontrol-origin: margin;
@@ -1184,11 +1184,11 @@ class MainWindow(QMainWindow):
                 alternate-background-color: #F5F5F5;
                 border: 1px solid #E0E0E0;
                 font-size: 10pt;
-                color: black;  /* ДОБАВЛЕНО: явно задаем черный цвет текста */
+                color: black;
             }
             QTableWidget::item {
                 padding: 5px;
-                color: black;  /* ДОБАВЛЕНО: явно задаем черный цвет текста */
+                color: black;
             }
             QTableWidget::item:selected {
                 background-color: #2196F3;
@@ -1200,7 +1200,7 @@ class MainWindow(QMainWindow):
                 font-family: 'Courier New';
                 font-size: 10pt;
                 padding: 5px;
-                color: black;  /* ДОБАВЛЕНО: явно задаем черный цвет текста */
+                color: black;
             }
             QProgressBar {
                 border: 1px solid #BDBDBD;
@@ -1208,7 +1208,7 @@ class MainWindow(QMainWindow):
                 text-align: center;
                 font-weight: bold;
                 background-color: white;
-                color: black;  /* ДОБАВЛЕНО: явно задаем черный цвет текста */
+                color: black;
             }
             QProgressBar::chunk {
                 background-color: #4CAF50;
@@ -1224,27 +1224,25 @@ class MainWindow(QMainWindow):
                 margin-right: 2px;
                 border-top-left-radius: 4px;
                 border-top-right-radius: 4px;
-                color: black;  /* ДОБАВЛЕНО: явно задаем черный цвет текста */
+                color: black;
             }
             QTabBar::tab:selected {
                 background-color: white;
                 font-weight: bold;
-                color: black;  /* ДОБАВЛЕНО: явно задаем черный цвет текста */
+                color: black;
             }
             QTabBar::tab:hover {
                 background-color: #F5F5F5;
-                color: black;  /* ДОБАВЛЕНО: явно задаем черный цвет текста */
+                color: black;
             }
             QStatusBar {
                 background-color: #E0E0E0;
                 color: #424242;
                 font-weight: bold;
             }
-            /* ДОБАВЛЕНО: стили для меток (QLabel) */
             QLabel {
                 color: black;
             }
-            /* ДОБАВЛЕНО: стили для полей ввода (QSpinBox, QDoubleSpinBox) */
             QSpinBox, QDoubleSpinBox {
                 background-color: white;
                 color: black;
@@ -1255,7 +1253,7 @@ class MainWindow(QMainWindow):
         """)
 
     def apply_dialog_styles(self):
-        """Применение стилей для окна настроек"""
+        # Применение стилей для окна настроек
         self.setStyleSheet("""
             QDialog {
                 background-color: white;
@@ -1327,11 +1325,11 @@ class MainWindow(QMainWindow):
         """)
 
     def setup_system_tray(self):
-        """Настройка системного трея"""
+        # Настройка системного трея
         if QSystemTrayIcon.isSystemTrayAvailable():
             self.tray_icon = QSystemTrayIcon(self)
 
-            # Создание меню трея
+            # Создание меню
             tray_menu = QMenu()
 
             show_action = QAction("📊 Показать панель", self)
@@ -1376,7 +1374,7 @@ class MainWindow(QMainWindow):
             self.tray_icon.show()
 
     def load_config(self):
-        """Загрузка конфигурации"""
+        # Загрузка конфигурации
         self.config = {
             'n_detectors': 200,
             'self_radius': 0.15,
@@ -1401,7 +1399,7 @@ class MainWindow(QMainWindow):
             self.log_message(f"❌ Ошибка загрузки конфигурации: {e}")
 
     def start_monitoring(self):
-        """Запуск мониторинга с проверкой сохраненного состояния"""
+        # Запуск мониторинга с проверкой сохраненного состояния
         if self.is_monitoring:
             return
 
@@ -1454,7 +1452,7 @@ class MainWindow(QMainWindow):
             self.log_message(f"❌ Ошибка запуска мониторинга: {e}")
 
     def stop_monitoring(self):
-        """Остановка мониторинга"""
+        # Остановка мониторинга
         if not self.is_monitoring:
             return
 
@@ -1482,7 +1480,7 @@ class MainWindow(QMainWindow):
             self.log_message(f"❌ Ошибка остановки мониторинга: {e}")
 
     def confirm_retraining(self):
-        """Подтверждение переобучения системы"""
+        # Подтверждение переобучения системы
         if not self.is_monitoring:
             QMessageBox.warning(self, "Предупреждение",
                               "Мониторинг не активен. Запустите мониторинг для переобучения.")
@@ -1506,7 +1504,7 @@ class MainWindow(QMainWindow):
             self.start_retraining()
 
     def start_retraining(self):
-        """Запуск переобучения системы"""
+        # Запуск переобучения системы
         try:
             # Создаем backup текущего состояния
             backup_filename = f"ais_backup_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pkl"
@@ -1538,7 +1536,8 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Ошибка", f"Не удалось запустить переобучение: {str(e)}")
 
     def on_retraining_completed(self, detectors_count):
-        """Обработка завершения переобучения"""
+        # Обработка завершения переобучения
+      
         # Разблокируем кнопки
         self.btn_retrain.setEnabled(True)
         self.btn_stop.setEnabled(True)
@@ -1568,7 +1567,8 @@ class MainWindow(QMainWindow):
             self.on_status_updated(status)
 
     def on_metrics_updated(self, metrics):
-        """Обработка обновления метрик"""
+        # Обработка обновления метрик
+      
         # Обновление текстовых меток
         self.lbl_cpu.setText(f"CPU: {metrics.get('cpu_percent', 0):.1f}%")
         self.lbl_memory.setText(f"Память: {metrics.get('memory_percent', 0):.1f}%")
@@ -1593,7 +1593,7 @@ class MainWindow(QMainWindow):
         self.update_process_table()
 
     def on_anomaly_detected(self, anomaly_info):
-        """Обработка обнаруженной аномалии"""
+        # Обработка обнаруженной аномалии
         threat_level = anomaly_info.get('threat_level', 'low')
         confidence = anomaly_info.get('confidence', 0)
         detectors = anomaly_info.get('detectors', 0)
@@ -1669,7 +1669,7 @@ class MainWindow(QMainWindow):
             )
 
     def on_status_updated(self, status):
-        """Обновление статуса системы"""
+        # Обновление статуса системы
         self.lbl_detectors.setText(f"Детекторов: {status.get('total_detectors', 0)}")
         self.lbl_anomalies.setText(f"Аномалий обнаружено: {status.get('anomalies_detected', 0)}")
         self.lbl_memory_cells.setText(f"Клеток памяти: {status.get('memory_cells', 0)}")
@@ -1690,12 +1690,12 @@ class MainWindow(QMainWindow):
         self.lbl_incidents_logged.setText(f"Инцидентов в журнале: {incidents_logged}")
 
     def on_training_progress(self, progress):
-        """Обновление прогресса обучения"""
+        # Обновление прогресса обучения
         self.progress_training.setValue(progress)
         self.status_bar.showMessage(f"Обучение системы: {progress}%")
 
     def on_training_completed(self):
-        """Обучение завершено"""
+        # Завершение обучения
         self.progress_training.setVisible(False)
         self.log_message("✅ Обучение завершено! Система готова к работе.")
         self.status_bar.showMessage("Система активна и обучена")
@@ -1711,14 +1711,15 @@ class MainWindow(QMainWindow):
             )
 
     def on_training_skipped(self):
-        """Обучение пропущено (система уже обучена)"""
+        # Пропуск обучения (система уже обучена)
         self.log_message("✅ Используется сохраненное состояние системы")
         self.status_bar.showMessage("Используется сохраненное состояние")
         self.lbl_training.setText("Обучение: Загружено")
         self.lbl_training.setStyleSheet("font-weight: bold; color: blue; padding: 5px;")
 
     def update_graphs(self, metrics):
-        """Обновление графиков"""
+        # Обновление графиков
+      
         # Ограничение истории
         max_history = 100
 
@@ -1749,7 +1750,7 @@ class MainWindow(QMainWindow):
         self.network_recv_curve.setData(self.network_recv_data)
 
     def update_process_table(self):
-        """Обновление таблицы процессов"""
+        # Обновление таблицы процессов
         try:
             processes = []
             for proc in psutil.process_iter(['pid', 'name', 'cpu_percent', 'memory_percent']):
@@ -1794,7 +1795,7 @@ class MainWindow(QMainWindow):
             logger.error(f"Ошибка обновления таблицы процессов: {e}")
 
     def update_ui(self):
-        """Периодическое обновление UI"""
+        # Периодическое обновление UI
         if not self.is_monitoring:
             return
 
@@ -1803,7 +1804,7 @@ class MainWindow(QMainWindow):
         self.status_bar.showMessage(f"Мониторинг активен | {current_time} | Автосохранение включено")
 
     def log_message(self, message):
-        """Добавление сообщения в лог"""
+        # Добавление в лог
         timestamp = datetime.now().strftime("%H:%M:%S")
         self.log_text.append(f"[{timestamp}] {message}")
 
@@ -1812,12 +1813,12 @@ class MainWindow(QMainWindow):
         scrollbar.setValue(scrollbar.maximum())
 
     def clear_log(self):
-        """Очистка лога"""
+        # Очистка лога
         self.log_text.clear()
         self.log_message("🗑 Лог очищен")
 
     def save_log(self):
-        """Сохранение лога в файл"""
+        # Сохранение лога в файл
         try:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"ais_log_{timestamp}.txt"
@@ -1833,7 +1834,7 @@ class MainWindow(QMainWindow):
             self.log_message(f"❌ Ошибка сохранения лога: {e}")
             
     def export_incidents(self):
-        """Экспорт инцидентов в отдельный файл"""
+        # Экспорт инцидентов в файл
         if not self.ais:
             QMessageBox.warning(self, "Предупреждение", "Система не инициализирована")
             return
@@ -1861,7 +1862,7 @@ class MainWindow(QMainWindow):
             self.log_message(f"❌ Ошибка экспорта инцидентов: {e}")
             
     def view_incidents(self):
-        """Просмотр журнала инцидентов"""
+        # Просмотр журнала инцидентов
         if not self.ais:
             QMessageBox.warning(self, "Предупреждение", "Система не инициализирована")
             return
@@ -1874,7 +1875,7 @@ class MainWindow(QMainWindow):
                 QMessageBox.information(self, "Информация", "Журнал инцидентов пуст")
                 return
                 
-            # Создаем диалоговое окно для просмотра
+            # Создание диалогового окна для просмотра
             dialog = QDialog(self)
             dialog.setWindowTitle("Журнал инцидентов")
             dialog.setGeometry(200, 200, 800, 600)
@@ -1914,7 +1915,7 @@ class MainWindow(QMainWindow):
             logger.error(f"Ошибка просмотра инцидентов: {e}")
             
     def refresh_incidents_view(self, text_edit):
-        """Обновление просмотра инцидентов"""
+        # Обновление просмотра истории инцидентов
         if not self.ais:
             return
             
@@ -1925,7 +1926,7 @@ class MainWindow(QMainWindow):
             logger.error(f"Ошибка обновления просмотра инцидентов: {e}")
 
     def export_state(self):
-        """Экспорт состояния системы"""
+        # Экспорт состояния системы
         if not self.ais:
             QMessageBox.warning(self, "Предупреждение", "Система не инициализирована")
             return
@@ -1946,7 +1947,7 @@ class MainWindow(QMainWindow):
             self.log_message(f"❌ Ошибка экспорта состояния: {e}")
 
     def show_settings(self):
-        """Показ окна настроек"""
+        # Показ окна настроек
         settings_dialog = SettingsDialog(self.config, self)
         if settings_dialog.exec() == QDialog.DialogCode.Accepted:
             # Сохранение новых настроек
@@ -1970,7 +1971,7 @@ class MainWindow(QMainWindow):
                 self.log_message(f"❌ Ошибка сохранения конфигурации: {e}")
 
     def closeEvent(self, event):
-        """Обработка закрытия окна"""
+        # Обработка закрытия окна
         if self.is_monitoring:
             reply = QMessageBox.question(
                 self, 'Подтверждение',
@@ -1999,7 +2000,7 @@ class MainWindow(QMainWindow):
 # ============================================
 
 class RetrainingThread(QThread):
-    """Поток для переобучения системы"""
+    # Поток для переобучения системы
 
     progress_updated = pyqtSignal(int)
     retraining_completed = pyqtSignal(int)
@@ -2010,7 +2011,7 @@ class RetrainingThread(QThread):
         self.config = config
 
     def run(self):
-        """Процесс переобучения"""
+        # Процесс переобучения
         try:
             # Сбор данных для переобучения
             training_data = []
@@ -2042,11 +2043,11 @@ class RetrainingThread(QThread):
             logger.error(f"Ошибка в потоке переобучения: {e}")
 
 # ============================================
-# КЛАСС AIS ДЛЯ GUI
+# AIS_WINDOWS
 # ============================================
 
 class WindowsAISGUI(ArtificialImmuneSystem):
-    """Искусственная иммунная система для Windows с поддержкой GUI"""
+    # Реализация алгоритма отрицательного отбора ИИС
 
     def __init__(self, config):
         super().__init__(
@@ -2058,10 +2059,10 @@ class WindowsAISGUI(ArtificialImmuneSystem):
 
         self.config = config
         self.monitor = WindowsSystemMonitor()
-        self.training_mode = False  # По умолчанию не требуем обучения
+        self.training_mode = False
 
     def _prepare_feature_vector(self, metrics):
-        """Подготовка вектора признаков"""
+        # Подготовка вектора признаков
         key_metrics = [
             'cpu_percent',
             'memory_percent',
@@ -2092,7 +2093,7 @@ class WindowsAISGUI(ArtificialImmuneSystem):
         return np.array(vector)
 
     def _assess_threat_level(self, event):
-        """Оценка уровня угрозы"""
+        # Оценка уровня угрозы
         confidence = event['confidence']
         detectors = event['activated_detectors']
 
@@ -2106,11 +2107,11 @@ class WindowsAISGUI(ArtificialImmuneSystem):
             return 'info'
 
 # ============================================
-# ДИАЛОГ НАСТРОЕК (БЕЗ ИЗМЕНЕНИЙ)
+# ОКНО НАСТРОЕК
 # ============================================
 
 class SettingsDialog(QDialog):
-    """Диалоговое окно настроек"""
+    # Окно настроек
 
     def __init__(self, config, parent=None):
         super().__init__(parent)
@@ -2121,7 +2122,7 @@ class SettingsDialog(QDialog):
         self.setWindowTitle("Настройки системы")
         self.setGeometry(300, 300, 400, 500)
 
-        # Явно задаем стиль для диалога настроек
+        # Стиль для окна настроек
         self.setStyleSheet("""
             QDialog {
                 background-color: white;
@@ -2204,7 +2205,7 @@ class SettingsDialog(QDialog):
         detector_group.setLayout(detector_layout)
         layout.addWidget(detector_group)
 
-        # Настройки мониторинга
+        # Окно настройки мониторинга
         monitor_group = QGroupBox("Настройки мониторинга")
         monitor_layout = QVBoxLayout()
 
@@ -2271,7 +2272,7 @@ class SettingsDialog(QDialog):
         self.setLayout(layout)
 
     def get_config(self):
-        """Получение конфигурации из UI"""
+        # Получение конфигурации из UI
         return {
             'n_detectors': self.spin_detectors.value(),
             'self_radius': self.spin_radius.value(),
@@ -2285,7 +2286,7 @@ class SettingsDialog(QDialog):
         }
 
     def reset_defaults(self):
-        """Сброс настроек по умолчанию"""
+        # Сброс настроек по умолчанию
         defaults = {
             'n_detectors': 200,
             'self_radius': 0.15,
@@ -2313,7 +2314,6 @@ class SettingsDialog(QDialog):
 # ============================================
 
 def main():
-    """Главная функция запуска"""
     # Проверка прав администратора
     try:
         is_admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
@@ -2346,4 +2346,5 @@ def main():
 
 
 if __name__ == "__main__":
+
     main()
